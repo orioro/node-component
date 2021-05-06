@@ -22,3 +22,7 @@ export type ComponentMountFn =
 export type CreateComponentInterface = (
   props: PlainObject
 ) => Promise<ComponentInstance>
+
+export type CreateComponentSyncInterface = (
+  props: PlainObject
+) => ComponentInstance

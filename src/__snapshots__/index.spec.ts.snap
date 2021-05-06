@@ -2,6 +2,7 @@
 
 exports[`public api 1`] = `
 Array [
+  "componentSync",
   "component",
 ]
 `;

@@ -5,6 +5,7 @@ import {
   ComponentInstance,
   ComponentPropTypes,
   ComponentMountFn,
+  CreateComponentSyncInterface,
   CreateComponentInterface,
 } from './types'
 
@@ -17,6 +18,78 @@ const _makeCounter = (prefix) => {
   }
 }
 
+const _prepareUnmount = (
+  componentName: string,
+  id: string,
+  instanceUnmount,
+  props: PlainObject
+) => {
+  return () => {
+    return Promise.all(
+      Object.keys(props)
+        .map((key) => props[key])
+        .filter(
+          (prop) =>
+            typeof prop.componentName === 'string' &&
+            typeof prop.unmount === 'function'
+        )
+        .map((prop) => prop.unmount())
+    ).then(() => {
+      console.log(`Will unmount: ${componentName}#${id}`)
+
+      return typeof instanceUnmount === 'function'
+        ? instanceUnmount()
+        : undefined
+    })
+  }
+}
+
+/**
+ * @function componentSync
+ * @param {String} componentName
+ * @param {Function} mount
+ * @param {Object} propTypes
+ */
+export const componentSync = (
+  componentName: string,
+  mount: ComponentMountFn,
+  propTypes: ComponentPropTypes
+): CreateComponentSyncInterface => {
+  const counter = _makeCounter(componentName)
+
+  const CreateComponentSync = (
+    resolvedProps: PlainObject
+  ): ComponentInstance => {
+    validateType(propTypes, resolvedProps)
+
+    const instance = mount(resolvedProps) || {}
+
+    const id = instance.id || counter()
+    const instanceUnmount = instance.unmount
+    const unmount = _prepareUnmount(
+      componentName,
+      id,
+      instanceUnmount,
+      resolvedProps
+    )
+
+    return {
+      ...instance,
+      componentName,
+      id,
+      unmount,
+    }
+  }
+
+  return CreateComponentSync
+}
+
+/**
+ * @function component
+ * @param {String} componentName
+ * @param {Function} mount
+ * @param {Object} propTypes
+ */
 export const component = (
   componentName: string,
   mount: ComponentMountFn,
@@ -45,30 +118,17 @@ export const component = (
       .then(([instance = {}, resolvedProps]) => {
         const id = instance.id || counter()
         const instanceUnmount = instance.unmount
-
-        const unmount = () => {
-          return Promise.all(
-            Object.keys(resolvedProps)
-              .map((key) => resolvedProps[key])
-              .filter(
-                (prop) =>
-                  typeof prop.componentName === 'string' &&
-                  typeof prop.unmount === 'function'
-              )
-              .map((prop) => prop.unmount())
-          ).then(() => {
-            console.log(`Will unmount: ${componentName}#${id}`)
-
-            return typeof instanceUnmount === 'function'
-              ? instanceUnmount()
-              : undefined
-          })
-        }
+        const unmount = _prepareUnmount(
+          componentName,
+          id,
+          instanceUnmount,
+          resolvedProps
+        )
 
         return {
           ...instance,
-          id,
           componentName,
+          id,
           unmount,
         }
       })
