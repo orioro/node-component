@@ -1,5 +1,6 @@
 import { objectType } from '@orioro/typing'
 import { component, componentSync } from './component'
+import { ComponentMountError } from './errors'
 
 import { testCases, asyncResult } from '@orioro/jest-util'
 
@@ -53,7 +54,7 @@ describe('component(componentName, mount, propTypes)', () => {
               someOtherConfig: 10,
             }),
         ],
-        [{ opt1: 'value-a', opt2: 'string' }, asyncResult(TypeError)],
+        [{ opt1: 'value-a', opt2: 'string' }, asyncResult(ComponentMountError)],
       ],
       ComponentA
     )
@@ -92,7 +93,7 @@ describe('component(componentName, mount, propTypes)', () => {
               methodA: 'some string',
             },
           },
-          asyncResult(TypeError),
+          asyncResult(ComponentMountError),
         ],
       ],
       ComponentB
@@ -283,7 +284,7 @@ describe('componentSync(componentName, mount, propTypes)', () => {
             someOtherConfig: 10,
           }),
       ],
-      [{ opt1: 'value-a', opt2: 'string' }, TypeError],
+      [{ opt1: 'value-a', opt2: 'string' }, ComponentMountError],
     ],
     ComponentA
   )

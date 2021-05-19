@@ -1,5 +1,7 @@
 import { validateType } from '@orioro/typing'
 
+import { ComponentMountError, ComponentUnmountError } from './errors'
+
 import {
   PlainObject,
   ComponentInstance,
@@ -34,13 +36,17 @@ const _prepareUnmount = (
             typeof prop.unmount === 'function'
         )
         .map((prop) => prop.unmount())
-    ).then(() => {
-      console.log(`Will unmount: ${componentName}#${id}`)
+    )
+      .then(() => {
+        console.log(`Will unmount: ${componentName}#${id}`)
 
-      return typeof instanceUnmount === 'function'
-        ? instanceUnmount()
-        : undefined
-    })
+        return typeof instanceUnmount === 'function'
+          ? instanceUnmount()
+          : undefined
+      })
+      .catch((err) => {
+        throw new ComponentUnmountError(componentName, err)
+      })
   }
 }
 
@@ -60,24 +66,28 @@ export const componentSync = (
   const CreateComponentSync = (
     resolvedProps: PlainObject
   ): ComponentInstance => {
-    validateType(propTypes, resolvedProps)
+    try {
+      validateType(propTypes, resolvedProps)
 
-    const instance = mount(resolvedProps) || {}
+      const instance = mount(resolvedProps) || {}
 
-    const id = instance.id || counter()
-    const instanceUnmount = instance.unmount
-    const unmount = _prepareUnmount(
-      componentName,
-      id,
-      instanceUnmount,
-      resolvedProps
-    )
+      const id = instance.id || counter()
+      const instanceUnmount = instance.unmount
+      const unmount = _prepareUnmount(
+        componentName,
+        id,
+        instanceUnmount,
+        resolvedProps
+      )
 
-    return {
-      ...instance,
-      componentName,
-      id,
-      unmount,
+      return {
+        ...instance,
+        componentName,
+        id,
+        unmount,
+      }
+    } catch (err) {
+      throw new ComponentMountError(componentName, err)
     }
   }
 
@@ -131,6 +141,9 @@ export const component = (
           id,
           unmount,
         }
+      })
+      .catch((err) => {
+        throw new ComponentMountError(componentName, err)
       })
   }
 
