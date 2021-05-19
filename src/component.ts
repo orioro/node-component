@@ -58,8 +58,8 @@ const _prepareUnmount = (
  */
 export const componentSync = (
   componentName: string,
-  mount: ComponentMountFn,
-  propTypes: ComponentPropTypes
+  propTypes: ComponentPropTypes,
+  mount: ComponentMountFn
 ): CreateComponentSyncInterface => {
   const counter = _makeCounter(componentName)
 
@@ -102,8 +102,8 @@ export const componentSync = (
  */
 export const component = (
   componentName: string,
-  mount: ComponentMountFn,
-  propTypes: ComponentPropTypes
+  propTypes: ComponentPropTypes,
+  mount: ComponentMountFn
 ): CreateComponentInterface => {
   const propKeys = Object.keys(propTypes)
 

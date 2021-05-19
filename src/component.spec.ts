@@ -13,23 +13,19 @@ describe('component(componentName, mount, propTypes)', () => {
   describe('component type validation', () => {
     const ComponentA = component(
       'ComponentA',
+      {
+        opt1: 'string',
+        opt2: 'number',
+      },
       ({ opt1, opt2 }) => ({
         id: `id-${opt1}`,
         someOtherConfig: opt2,
         methodA: () => `methodA-${opt1}`,
-      }),
-      {
-        opt1: 'string',
-        opt2: 'number',
-      }
+      })
     )
 
     const ComponentB = component(
       'ComponentB',
-      ({ opt1, aInstance }) => ({
-        id: `id-${opt1}`,
-        methodB: () => `${aInstance.methodA()}__methodB-${opt1}`,
-      }),
       {
         opt1: 'string',
         aInstance: objectType(
@@ -40,7 +36,11 @@ describe('component(componentName, mount, propTypes)', () => {
             unknownProperties: true,
           }
         ),
-      }
+      },
+      ({ opt1, aInstance }) => ({
+        id: `id-${opt1}`,
+        methodB: () => `${aInstance.methodA()}__methodB-${opt1}`,
+      })
     )
 
     testCases(
@@ -103,6 +103,10 @@ describe('component(componentName, mount, propTypes)', () => {
   test('components that depend on other components', () => {
     const ComponentA = component(
       'ComponentA',
+      {
+        opt1: 'string',
+        opt2: 'string',
+      },
       ({ opt1, opt2 }) => {
         return wait(100, {
           opt1,
@@ -111,25 +115,21 @@ describe('component(componentName, mount, propTypes)', () => {
             return 'methodA-result'
           },
         })
-      },
-      {
-        opt1: 'string',
-        opt2: 'string',
       }
     )
 
     const ComponentB = component(
       'ComponentB',
+      {
+        instanceA: 'object',
+        opt1: 'boolean',
+      },
       ({ instanceA, opt1 }) => {
         return wait(100, {
           methodB: () => {
             return `${instanceA.methodA()}__methodB-${opt1 ? 'YES' : 'NO'}`
           },
         })
-      },
-      {
-        instanceA: 'object',
-        opt1: 'boolean',
       }
     )
 
@@ -156,60 +156,60 @@ describe('component(componentName, mount, propTypes)', () => {
 
     const ComponentA = component(
       'ComponentA',
+      {
+        opt1: 'string',
+        opt2: 'string',
+      },
       ({ opt1, opt2 }) => {
         return wait(100, {
           opt1,
           opt2,
           unmount: mockInstanceAUnmount,
         })
-      },
-      {
-        opt1: 'string',
-        opt2: 'string',
       }
     )
 
     const ComponentB = component(
       'ComponentB',
+      {
+        opt1: 'string',
+        opt2: 'string',
+      },
       ({ opt1, opt2 }) => {
         return wait(100, {
           opt1,
           opt2,
           unmount: mockInstanceBUnmount,
         })
-      },
-      {
-        opt1: 'string',
-        opt2: 'string',
       }
     )
 
     const ComponentC = component(
       'ComponentC',
+      {
+        instanceA: 'object',
+        instanceB: 'object',
+        opt1: 'boolean',
+      },
       ({ instanceA, opt1 }) => {
         return wait(100, {
           instanceA,
           opt1,
           unmount: mockInstanceCUnmount,
         })
-      },
-      {
-        instanceA: 'object',
-        instanceB: 'object',
-        opt1: 'boolean',
       }
     )
 
     const ComponentD = component(
       'ComponentD',
+      {
+        instanceC: 'object',
+        opt1: 'number',
+      },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ({ instanceC, opt1 }) => {
         // returns nothing, but unmount still works
         return wait(100, undefined)
-      },
-      {
-        instanceC: 'object',
-        opt1: 'number',
       }
     )
 
@@ -262,15 +262,15 @@ describe('component(componentName, mount, propTypes)', () => {
 describe('componentSync(componentName, mount, propTypes)', () => {
   const ComponentA = componentSync(
     'ComponentA',
+    {
+      opt1: 'string',
+      opt2: 'number',
+    },
     ({ opt1, opt2 }) => ({
       id: `id-${opt1}`,
       someOtherConfig: opt2,
       methodA: () => `methodA-${opt1}`,
-    }),
-    {
-      opt1: 'string',
-      opt2: 'number',
-    }
+    })
   )
 
   testCases(
